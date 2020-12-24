@@ -10,24 +10,43 @@ Agent and deploy it's configurations automatically.
 Add this cookbook to your base recipe:
 
 ```ruby
-cookbook 'aws-cloudwatch', '~> 1.0.0'
+cookbook 'aws-cloudwatch', git: 'https://github.com/finfo/chef-aws-cloudwatch.git'
 ```
 
-And update your recipe/role/etc. to include teh install:
+And update your recipe/role/etc. to include the install:
 
     include_recipe 'aws-cloudwatch::default'
 
-You can add files to log by doing:
+    # or if you want to put it in node
+    {
+      "run_list": [
+        ...some awesome recipes...,
+        "recipe[aws-cloudwatch::default]"
+      ]
+    }
 
-    aws_cloudwatch_log "/var/log/syslog1234" do
-        log_group_name "groupname"
-        log_stream_name "streamname"
-        timezone "Local"
-        timestamp_format "timestampformat"
-        encoding "utf-8"
-    end
+You can add files to log by adding attributes in nodes:
 
-For more deployment details about AWS CloudWatch Logs, please visit the [AWS CloudWatch Unified Agent Documentration][aws-cloudwatch-url].
+    "aws_cloudwatch": {
+      "logfiles":[{
+        "file_path": "/path/to/log/file1",
+        "log_group_name": "log group_name",
+        "log_stream_name": "log steam_name"
+      }, {
+        "file_path": "/path/to/log/file2",
+        "log_group_name": "log group_name",
+        "log_stream_name": "log steam_name"
+      }]
+    }
+
+* Add log file infos under `node['aws_cloudwatch']['logfiles']` array.
+* Attributes `file_path`, `log_group_name`, `log_stream_name` are required.
+* Optional attributes are
+  * `timezone`: Default to Local
+  * `timestamp_format`: Default to current time
+  * `encoding`: Default to utf-8
+
+For more deployment details about AWS CloudWatch Logs, please visit the [AWS CloudWatch Unified Agent Documentation][aws-cloudwatch-url] and [CloudWatch Agent Configuration File Details](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Agent-Configuration-File-Details.html).
 
 See something missing? Feel free to open a [pull request](https://github.com/ejhayes/aws-codedeploy-agent/pulls)!
 

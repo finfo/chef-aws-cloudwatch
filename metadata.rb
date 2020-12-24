@@ -14,4 +14,4 @@ issues_url 'https://github.com/ejhayes/chef-cloudwatch/issues' if respond_to? :i
   supports os
 end
 
-chef_version '>= 14.2'
+chef_version '>= 13.9'
