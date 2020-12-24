@@ -34,7 +34,6 @@ execute 'Unzip CloudWatch Agent' do
   only_if { ! File.exists? "#{node['aws_cloudwatch']['path']}/bin/amazon-cloudwatch-agent-ctl" }
 end
 
-
 # install aws unified cloudwatch agent
 execute 'Install CloudWatch Agent' do
    command "dpkg -i -E ./amazon-cloudwatch-agent.deb"
@@ -42,7 +41,24 @@ execute 'Install CloudWatch Agent' do
    cwd '/tmp'
 end
 
-# sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:configuration-file-path -s
+# create configuration file
+template "#{node['aws_cloudwatch']['path']}/etc/amazon-cloudwatch-agent.json" do
+  source 'awslogs.conf.erb'
+  owner 'root'
+  group 'root'
+  mode 0644
+  variables({
+    logfiles: node['aws_cloudwatch']['logfiles']
+  })
+  action :create
+end
+
+# start cloudwatch agent with configuration file
+execute 'Fetch Config and Start CloudWatch Agent' do
+  command "/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:#{node['aws_cloudwatch']['path']}/etc/amazon-cloudwatch-agent.json -s"
+  action :run
+  only_if { File.exists? "#{node['aws_cloudwatch']['path']}/bin/amazon-cloudwatch-agent-ctl" }
+end
 
 # restart the agent service in the end to ensure that
 # the agent will run with the custom configurations
